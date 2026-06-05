@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mochi Simulator: One Bad Decision At A Time</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <canvas id="stars-canvas"></canvas>
+
+  <!-- ══════════════════════ TITLE ══════════════════════ -->
+  <div id="screen-title" class="screen active">
+    <div class="center-wrap">
+      <div class="title-moon">🌙</div>
+      <h1 class="title-main">MOCHI SIMULATOR</h1>
+      <p class="title-tag">One Bad Decision At A Time</p>
+      <p class="title-desc">A 20-day life simulation about chaos, raccoons, and the consequences thereof.</p>
+      <div class="title-btns">
+        <button class="btn-primary" onclick="startGame()">▶  Begin Simulation</button>
+        <button class="btn-ghost" onclick="openCollection()">📚 Endings: <span id="title-end-count">0</span> / 28</button>
+      </div>
+      <p class="title-warn">⚠ Side effects: raccoon empathy, existential napping, general chaos.</p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ GAME ══════════════════════ -->
+  <div id="screen-game" class="screen">
+    <div class="game-wrap">
+      <div class="game-header">
+        <span class="day-badge" id="pill-day">Day 1 / 20</span>
+        <div class="stat-pills">
+          <span class="pill" id="pill-chaos">Chaos: Suspiciously Normal</span>
+          <span class="pill" id="pill-sleep">Sleep: Adequate</span>
+          <span class="pill" id="pill-raccoon">🦝 Fully Human</span>
+        </div>
+      </div>
+      <div class="narrator-box">
+        <span class="narrator-label">narrator</span>
+        <p id="narrator-line" class="narrator-text"></p>
+      </div>
+      <p id="scenario-text" class="scenario-text"></p>
+      <div id="choices-wrap" class="choices-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ PARK ══════════════════════ -->
+  <div id="screen-park" class="screen">
+    <div class="park-wrap">
+      <div class="night-sky" id="night-sky">
+        <div class="moon-el" id="moon-el">🌙</div>
+      </div>
+      <div class="park-ground"></div>
+      <div class="bench-icon">🪑</div>
+      <div class="park-text-area">
+        <p class="park-narrator" id="park-narrator-line"></p>
+        <p class="park-desc"    id="park-desc-line"></p>
+        <p class="park-timer"   id="park-timer-line"></p>
+        <button class="btn-ghost" id="park-leave-btn" style="display:none" onclick="leavePark()">Stand up and head home →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ FINALE ══════════════════════ -->
+  <div id="screen-finale" class="screen">
+    <div class="finale-wrap">
+      <p class="finale-day-label">— THE FINAL DAY —</p>
+      <div id="finale-text" class="finale-text"></div>
+      <button class="btn-primary finale-btn" id="finale-btn"
+              style="opacity:0;pointer-events:none;margin-top:32px"
+              onclick="triggerEnding()">See Your Ending →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ ENDING ══════════════════════ -->
+  <div id="screen-ending" class="screen">
+    <div class="center-wrap">
+      <div class="end-trophy" id="end-trophy">🏆</div>
+      <p class="end-label">ENDING UNLOCKED</p>
+      <h2 id="end-title" class="end-title"></h2>
+      <p  id="end-desc"  class="end-desc"></p>
+      <div id="end-stat-row" class="end-stat-row"></div>
+      <div class="title-btns" style="margin-top:8px">
+        <button class="btn-primary" onclick="startGame()">Play Again</button>
+        <button class="btn-ghost"   onclick="openCollection()">View Collection</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ COLLECTION ══════════════════════ -->
+  <div id="screen-collection" class="screen">
+    <div class="coll-wrap">
+      <div class="coll-top-bar">
+        <button class="btn-back" onclick="goBack()">← Back</button>
+        <h2 class="coll-title">COLLECTION</h2>
+      </div>
+
+      <!-- Tabs -->
+      <div class="coll-tabs">
+        <button class="coll-tab coll-tab-active" id="tab-endings" onclick="switchTab('endings')">
+          Endings &nbsp;<span class="tab-count"><span id="found-count">0</span> / 28</span>
+        </button>
+        <button class="coll-tab" id="tab-achs" onclick="switchTab('achs')">
+          Achievements &nbsp;<span class="tab-count"><span id="coll-ach-count">0</span> / 15</span>
+        </button>
+      </div>
+
+      <!-- Endings panel -->
+      <div id="coll-panel-endings" class="coll-panel">
+        <p class="coll-hint">Some endings require very specific choices. Most require questionable ones.</p>
+        <div id="endings-grid" class="endings-grid"></div>
+      </div>
+
+      <!-- Achievements panel -->
+      <div id="coll-panel-achs" class="coll-panel" style="display:none">
+        <p class="coll-hint">Unlocked across all playthroughs. Keep playing to find them all.</p>
+        <div id="achs-list" class="achs-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ SECRET ══════════════════════ -->
+  <div id="screen-secret" class="screen">
+    <div class="terminal-outer">
+      <div class="terminal-win">
+        <div class="terminal-bar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          <span class="terminal-name">narrator_files / private</span>
+        </div>
+        <div class="terminal-body" id="terminal-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ ACHIEVEMENT TOAST ══════════════════════ -->
+  <div id="ach-toast" class="ach-toast hidden">
+    <span class="ach-icon">🏆</span>
+    <div>
+      <p class="ach-label">Achievement Unlocked</p>
+      <p class="ach-name" id="ach-name-text"></p>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
